@@ -3,57 +3,16 @@ import /init.microtrust.rc
 on init
     # Create a more standard /dev/block layout for our scripts
     symlink /dev/block/platform/bootdevice /dev/block/bootdevice
-    mkdir /mnt/vendor/persist 0700 root root
-    mount ext4 /dev/block/platform/bootdevice/by-name/persist /mnt/vendor/persist
     export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw
     setprop sys.usb.configfs 1
     setprop sys.usb.controller "musb-hdrc"
     setprop sys.usb.ffs.aio_compat 1
-    setprop crypto.ready 1
     
 on fs
+    mkdir /mnt/vendor/persist 0700 root root
+    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist
     install_keyring
-
-
-on post-fs
-   start boot-hal-1-2
-    exec u:r:update_engine:s0 root root -- /system/bin/mtk_plpath_utils
-    start mtk.plpath.utils.link
-
-    on property:persist.vendor.mtk.pl_lnk=1
-    symlink /dev/block/mapper/pl_a /dev/block/by-name/preloader_raw_a
-    symlink /dev/block/mapper/pl_b /dev/block/by-name/preloader_raw_b
-    symlink /dev/block/mapper/pl_a /dev/block/platform/bootdevice/by-name/preloader_raw_a
-    symlink /dev/block/mapper/pl_b /dev/block/platform/bootdevice/by-name/preloader_raw_b
-
-# FSTAB_RAW2(lk2,bootloader2) of fstab.in.emmc, but without bootloader2 mount point
-    symlink /dev/block/by-name/lk1 /dev/block/by-name/bootloader1
-    symlink /dev/block/by-name/lk2 /dev/block/by-name/bootloader2
-
-# Fix ro.vendor.mtk_ufs_support remove issue of recovery mode
-on property:vendor.mtk.boot0_linka=1
-    symlink /dev/block/sda /dev/block/mmcblk0boot0
-
-on property:vendor.mtk.boot0_linkb=1
-    symlink /dev/block/sdb /dev/block/mmcblk0boot0
-
-on property:vendor.mtk.boot0_linkc=1
-    symlink /dev/block/sdc /dev/block/mmcblk0boot0
-
-on property:vendor.mtk.boot1_linka=1
-    symlink /dev/block/sda /dev/block/mmcblk0boot1
-
-on property:vendor.mtk.boot1_linkb=1
-    symlink /dev/block/sdb /dev/block/mmcblk0boot1
-
-on property:vendor.mtk.boot1_linkc=1
-    symlink /dev/block/sdc /dev/block/mmcblk0boot1
-    
-on boot
-    chown system system /dev/xiaomi-touch
-    chmod 0664 /dev/xiaomi-touch
-    chown system system /sys/class/touch/tp_dev/fod_status
-    chmod 0664 /sys/class/touch/tp_dev/fod_status
+    setprop crypto.ready 1
 
 service touchfeature-hal-1-0 /vendor/bin/hw/vendor.xiaomi.hardware.touchfeature@1.0-service
     class main
@@ -61,19 +20,8 @@ service touchfeature-hal-1-0 /vendor/bin/hw/vendor.xiaomi.hardware.touchfeature@
     group root
     onrestart restart touchfeature-hal-1-0
     seclabel u:r:recovery:s0
-    
-    
-service mtk.plpath.utils.link /system/bin/mtk_plpath_utils
-    class main
-    user root
-    group root system
-    disabled
-    oneshot
-    seclabel u:r:recovery:s0
 
 service keymint-beanpod /vendor/bin/hw/android.hardware.security.keymint@1.0-service.beanpod
-    interface android.hardware.keymaster@4.0::IKeymasterDevice default
-    interface android.hardware.keymaster@4.1::IKeymasterDevice default
     user root
     group root drmrpc
     disabled
@@ -92,49 +40,53 @@ service vendor.vibrator-default /vendor/bin/hw/android.hardware.vibrator-service
     user root
     group root system
     seclabel u:r:recovery:s0
-    
-on property:hwservicemanager.ready=true
-    start teei_daemon
-    start gatekeeper-1-0
-    start keymint-beanpod
-    start keymaster
-    
-    
-on property:vendor.sys.listener.registered=true
-    start teei_daemon
-    start gatekeeper-1-0
-    start keymint-beanpod
-    start keymaster
-   
-on property:ro.crypto.state=unsupported
-    stop teei_daemon
-    stop keymint-beanpod
-    stop gatekeeper-1-0
-    stop keymaster-4-1
 
-on property:ro.crypto.state=unencrypted
-    stop teei_daemon
-    stop keymint-beanpod
-    stop gatekeeper-1-0
-    stop keymaster
-    
-on property:twrp.all.users.decrypted=true
-    stop teei_daemon
-    stop keymint-beanpod
-    stop gatekeeper-1-0
-    stop keymaster
-
-on boot
-    start health-hal-2-1
-    start vendor.vibrator-default
-    setprop sys.usb.config adb
-
-service kernelsu /system/bin/kernelsu.sh
+service modules_mount /system/bin/modules_mount.sh
     user root
     group root
     disabled
     oneshot
     seclabel u:r:recovery:s0
 
+on property:vendor.sys.listener.registered=true
+    start gatekeeper-1-0
+    start keymint-beanpod
+
+    
+on property:hwservicemanager.ready=true
+    start keymint-beanpod
+    start gatekeeper-1-0
+
+   
+on property:ro.crypto.state=unsupported
+    stop teei_daemon
+    stop gatekeeper-1-0
+    stop keymint-beanpod
+
+on property:ro.crypto.state=unencrypted
+    stop teei_daemon
+    stop gatekeeper-1-0
+    stop keymint-beanpod
+    
+on property:twrp.all.users.decrypted=true
+    stop teei_daemon
+    stop gatekeeper-1-0
+    stop keymint-beanpod
+
+on boot
+    start boot-hal-1-2
+    start health-hal-2-1
+    start vendor.vibrator-default
+
+    setprop sys.usb.config adb
+
+    chown system system /dev/xiaomi-touch
+    chmod 0664 /dev/xiaomi-touch
+    chown system system /sys/class/touch/tp_dev/fod_status
+    chmod 0664 /sys/class/touch/tp_dev/fod_status
+
+#couldn't write [pid] to /dev/cpuset/foreground/tasks
+#    write /dev/cpuset/cgroup.clone_children 1
+#
 on property:twrp.decrypt.done=true
-    start kernelsu
+    start modules_mount

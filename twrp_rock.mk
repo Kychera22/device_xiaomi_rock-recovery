@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2022 The TWRP Open Source Project
+# Copyright 2024 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,28 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+#
+# Only the below variable(s) need to be changed!
+#
 
-# Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
-
-# Enable project quotas and casefolding for emulated storage without sdcardfs
-$(call inherit-product, $(SRC_TARGET_DIR)/product/emulated_storage.mk)
-
-# Installs gsi keys into ramdisk, to boot a developer GSI with verified boot.
-#$(call inherit-product, $(SRC_TARGET_DIR)/product/gsi_keys.mk)
-
-# Inherit from our custom product configuration.
-$(call inherit-product, vendor/twrp/config/common.mk)
-
-# Device specific configs.
-$(call inherit-product, device/xiaomi/rock/device.mk)
-
-## Device identifier. This must come after all inclusions.
-PRODUCT_DEVICE := rock
-PRODUCT_NAME := twrp_rock
-PRODUCT_BRAND := Redmi
-PRODUCT_MODEL := rock
-PRODUCT_MANUFACTURER := Xiaomi
+# Define hardware platform
 PRODUCT_RELEASE_NAME := rock
 
+# Device path for OEM device tree
+DEVICE_PATH := device/xiaomi/$(PRODUCT_RELEASE_NAME)
+
+# Inherit from hardware-specific part of the product configuration
+$(call inherit-product, $(DEVICE_PATH)/device.mk)
+
+# Inherit any OrangeFox-specific settings
+$(call inherit-product-if-exists, $(DEVICE_PATH)/fox_$(PRODUCT_RELEASE_NAME).mk)
+
+# Inherit some common TWRP stuff.
+$(call inherit-product, vendor/twrp/config/common.mk)
+
+
+## Device identifier. This must come after all inclusions
+PRODUCT_DEVICE := $(PRODUCT_RELEASE_NAME)
+PRODUCT_NAME := twrp_$(PRODUCT_RELEASE_NAME)
+PRODUCT_BRAND := POCO
+PRODUCT_MODEL := POCO M5
+PRODUCT_MANUFACTURER := Xiaomi

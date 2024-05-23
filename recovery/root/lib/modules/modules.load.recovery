@@ -149,6 +149,7 @@ leds-mtk-pwm.ko
 rt4831a_drv.ko
 extcon-mtk-usb.ko
 tcpci_late_sync.ko
+
 mtk_battery_oc_throttling.ko
 mtk_low_battery_throttling.ko
 pmic_lbat_service.ko
@@ -372,3 +373,6 @@ mtk-pm-domain-disable-unused.ko
 sec.ko
 uload_ind.ko
 load_track.ko
+flashlight.ko
+flashlights-led191.ko
+#mtk_bp_thl.ko

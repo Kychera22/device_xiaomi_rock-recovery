@@ -238,6 +238,8 @@ alias of:N*T*Cmediatek,mt6373 mtk_spmi_pmic
 alias of:N*T*Cmediatek,mt6373C* mtk_spmi_pmic
 alias of:N*T*Cmediatek,scpsys-disable-unused mtk_pm_domain_disable_unused
 alias of:N*T*Cmediatek,scpsys-disable-unusedC* mtk_pm_domain_disable_unused
+alias of:N*T*Cmediatek,mtk-bp-thl mtk_bp_thl
+alias of:N*T*Cmediatek,mtk-bp-thlC* mtk_bp_thl
 alias of:N*T*Cmediatek,pbm mtk_pbm
 alias of:N*T*Cmediatek,pbmC* mtk_pbm
 alias of:N*T*Cmediatek,disp-leds leds_mtk_disp

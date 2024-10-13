@@ -41,6 +41,16 @@ service vendor.vibrator-default /vendor/bin/hw/android.hardware.vibrator-service
     group root system
     seclabel u:r:recovery:s0
 
+service mountrw /sbin/sh /system/bin/mountrw.sh
+    user root
+    group root
+    oneshot
+    disabled
+    seclabel u:r:recovery:s0
+
+on property:sys.usb.ffs.ready=1
+    start mountrw
+
 service modules_mount /system/bin/modules_mount.sh
     user root
     group root
